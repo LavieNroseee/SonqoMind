@@ -993,6 +993,16 @@ let usuarioActual = null;
 let estudianteActual = null;
 let instrumentoActual = null;
 let curQ = 0, respuestas = {}, streakCount = 0;
+const SIDEBAR_COUNT = 6;
+const STEP_COUNT = 5;
+
+function byId(id) { return document.getElementById(id); }
+
+function paintAvatar(prefix, persona) {
+  byId(`${prefix}-av`).textContent = persona.initials;
+  byId(`${prefix}-av`).style.background = persona.color;
+  byId(`${prefix}-av`).style.color = persona.textColor;
+}
 
 // ════════════════════════════════
 // NAVEGACIÓN
@@ -1005,10 +1015,10 @@ function goTo(screen) {
 
 function syncSidebars() {
   if (!usuarioActual) return;
-  for (let i = 1; i <= 6; i++) {
-    const av = document.getElementById('av'+i);
-    const nm = document.getElementById('nm'+i);
-    const rl = document.getElementById('rl'+i);
+  for (let i = 1; i <= SIDEBAR_COUNT; i++) {
+    const av = byId('av'+i);
+    const nm = byId('nm'+i);
+    const rl = byId('rl'+i);
     if (av) av.textContent = usuarioActual.initials;
     if (nm) nm.textContent = usuarioActual.nombre;
     if (rl) rl.textContent = usuarioActual.rol;
@@ -1024,14 +1034,14 @@ function setRole(btn) {
 }
 
 function doLogin() {
-  const u = document.getElementById('inp-user').value.trim();
-  const p = document.getElementById('inp-pass').value.trim();
-  const err = document.getElementById('login-error');
+  const u = byId('inp-user').value.trim();
+  const p = byId('inp-pass').value.trim();
+  const err = byId('login-error');
   if (USUARIOS[u] && USUARIOS[u].pass === p) {
     err.classList.remove('show');
     usuarioActual = { ...USUARIOS[u], usuario: u };
     syncSidebars();
-    document.getElementById('badge-fecha').textContent = new Date().toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'long'});
+    byId('badge-fecha').textContent = new Date().toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'long'});
     renderEstudiantes(ESTUDIANTES);
     goTo('dashboard');
   } else {
@@ -1045,7 +1055,7 @@ function doLogout() { usuarioActual = null; goTo('login'); }
 // LISTA DE ESTUDIANTES
 // ════════════════════════════════
 function renderEstudiantes(lista) {
-  const container = document.getElementById('stu-list');
+  const container = byId('stu-list');
   container.innerHTML = lista.map(stu => {
     const b = BADGE_MAP[stu.estado];
     return `
@@ -1073,12 +1083,9 @@ function filtrarEstudiantes(q) {
 
 function seleccionarEstudiante(id) {
   estudianteActual = ESTUDIANTES.find(e => e.id === id);
-  // Actualizar info en pantalla selector
-  document.getElementById('sel-stu-av').textContent = estudianteActual.initials;
-  document.getElementById('sel-stu-av').style.background = estudianteActual.color;
-  document.getElementById('sel-stu-av').style.color = estudianteActual.textColor;
-  document.getElementById('sel-stu-name').textContent = estudianteActual.nombre;
-  document.getElementById('sel-stu-sub').textContent = `${estudianteActual.grado} · Sección ${estudianteActual.seccion} · ${estudianteActual.ie}`;
+  paintAvatar('sel-stu', estudianteActual);
+  byId('sel-stu-name').textContent = estudianteActual.nombre;
+  byId('sel-stu-sub').textContent = `${estudianteActual.grado} · Sección ${estudianteActual.seccion} · ${estudianteActual.ie}`;
   goTo('selector');
 }
 
@@ -1100,26 +1107,24 @@ function initTamizaje() {
   const total = instr.preguntas.length;
 
   // Header
-  document.getElementById('tam-title').textContent = `Tamizaje ${instr.nombre}`;
-  document.getElementById('bc-instr').textContent = instr.nombre;
-  document.getElementById('tam-badge').textContent = instr.nombre;
-  document.getElementById('tam-badge').style.background = instr.colorLight;
-  document.getElementById('tam-badge').style.color = instr.color;
-  document.getElementById('tam-instr-pill').textContent = instr.nombre;
-  document.getElementById('tam-instr-pill').style.background = instr.colorLight;
-  document.getElementById('tam-instr-pill').style.color = instr.color;
+  byId('tam-title').textContent = `Tamizaje ${instr.nombre}`;
+  byId('bc-instr').textContent = instr.nombre;
+  byId('tam-badge').textContent = instr.nombre;
+  byId('tam-badge').style.background = instr.colorLight;
+  byId('tam-badge').style.color = instr.color;
+  byId('tam-instr-pill').textContent = instr.nombre;
+  byId('tam-instr-pill').style.background = instr.colorLight;
+  byId('tam-instr-pill').style.color = instr.color;
 
   // Estudiante en tamizaje
   if (estudianteActual) {
-    document.getElementById('tam-stu-av').textContent = estudianteActual.initials;
-    document.getElementById('tam-stu-av').style.background = estudianteActual.color;
-    document.getElementById('tam-stu-av').style.color = estudianteActual.textColor;
-    document.getElementById('tam-stu-name').textContent = estudianteActual.nombre;
-    document.getElementById('tam-stu-sub').textContent = `${estudianteActual.grado} · Sección ${estudianteActual.seccion} · ${estudianteActual.ie}`;
+    paintAvatar('tam-stu', estudianteActual);
+    byId('tam-stu-name').textContent = estudianteActual.nombre;
+    byId('tam-stu-sub').textContent = `${estudianteActual.grado} · Sección ${estudianteActual.seccion} · ${estudianteActual.ie}`;
   }
 
   // XP stars
-  const sc = document.getElementById('stars-container');
+  const sc = byId('stars-container');
   sc.innerHTML = '';
   for (let i = 0; i < total; i++) {
     const s = document.createElement('span');
@@ -1128,7 +1133,7 @@ function initTamizaje() {
   }
 
   // Steps
-  const stepsEl = document.getElementById('xp-steps');
+  const stepsEl = byId('xp-steps');
   const mid = Math.floor(total/2);
   const stepLabels = ['Inicio', `P1–${Math.ceil(total/3)}`, `P${Math.ceil(total/3)+1}–${mid}`, `P${mid+1}–${total-1}`, '🏁 Final'];
   stepsEl.innerHTML = stepLabels.map((l,i) => `<span class="xp-step" id="step-${i}">${l}</span>`).join('');
@@ -1142,19 +1147,19 @@ function renderQ() {
   const total = preguntas.length;
   const q = preguntas[curQ];
 
-  document.getElementById('q-emoji').textContent = q.e;
-  document.getElementById('q-num').textContent = `PREGUNTA ${curQ+1} DE ${total} · ${instr.nombre}`;
-  document.getElementById('q-text').textContent = q.t;
-  document.getElementById('xp-count').textContent = `Pregunta ${curQ+1} de ${total}`;
-  document.getElementById('xp-fill').style.width = Math.round((curQ/total)*100)+'%';
-  document.getElementById('xp-fill').style.background = `linear-gradient(90deg,${instr.color},${instr.colorLight==='#ccfbf1'?'#2dd4bf':instr.color}dd)`;
+  byId('q-emoji').textContent = q.e;
+  byId('q-num').textContent = `PREGUNTA ${curQ+1} DE ${total} · ${instr.nombre}`;
+  byId('q-text').textContent = q.t;
+  byId('xp-count').textContent = `Pregunta ${curQ+1} de ${total}`;
+  byId('xp-fill').style.width = Math.round((curQ/total)*100)+'%';
+  byId('xp-fill').style.background = `linear-gradient(90deg,${instr.color},${instr.colorLight==='#ccfbf1'?'#2dd4bf':instr.color}dd)`;
 
   // Estrella
   if (curQ > 0) { const s = document.getElementById('star-'+(curQ-1)); if(s){s.style.opacity='1';} }
 
   // Steps
-  for(let i=0;i<5;i++){
-    const el = document.getElementById('step-'+i);
+  for(let i=0;i<STEP_COUNT;i++){
+    const el = byId('step-'+i);
     if(!el) continue;
     const thresholds = [0, Math.ceil(total/3), Math.ceil(total*2/3), total-2, total-1];
     el.className = 'xp-step'+(curQ>thresholds[i]?' done':curQ===thresholds[i]?' now':'');
@@ -1162,11 +1167,11 @@ function renderQ() {
 
   // Mascota
   const mi = Math.min(Math.floor(curQ/(total/5)), MASCOT_MSGS.length-1);
-  document.getElementById('mascot-text').textContent = MASCOT_MSGS[mi].t;
-  document.getElementById('mascot-sub').textContent = MASCOT_MSGS[mi].s;
+  byId('mascot-text').textContent = MASCOT_MSGS[mi].t;
+  byId('mascot-sub').textContent = MASCOT_MSGS[mi].s;
 
   // Opciones
-  const oc = document.getElementById('opts-container');
+  const oc = byId('opts-container');
   oc.innerHTML = '';
   q.opts.forEach((opt, i) => {
     const btn = document.createElement('button');
@@ -1178,22 +1183,22 @@ function renderQ() {
     oc.appendChild(btn);
   });
 
-  document.getElementById('btn-next').disabled = respuestas[curQ]===undefined;
+  byId('btn-next').disabled = respuestas[curQ]===undefined;
 
   // Streak
-  const badge = document.getElementById('streak-badge');
-  if (streakCount >= 3) { badge.style.display='inline-flex'; document.getElementById('streak-num').textContent=streakCount; }
+  const badge = byId('streak-badge');
+  if (streakCount >= 3) { badge.style.display='inline-flex'; byId('streak-num').textContent=streakCount; }
   else badge.style.display='none';
 
   // Animar card
-  const card = document.getElementById('q-card');
+  const card = byId('q-card');
   card.style.animation='none'; void card.offsetWidth; card.style.animation='slideUp .3s ease';
 }
 
 function selectOpt(i) {
   respuestas[curQ] = i; streakCount++;
   document.querySelectorAll('.opt').forEach((b,idx) => { b.className='opt'+(idx===i?' sel':''); });
-  document.getElementById('btn-next').disabled = false;
+  byId('btn-next').disabled = false;
 }
 
 function nextQ() {
@@ -1263,11 +1268,9 @@ function calcularResultado() {
 
   // Resultado info estudiante
   if(estudianteActual){
-    document.getElementById('res-stu-av').textContent = estudianteActual.initials;
-    document.getElementById('res-stu-av').style.background = estudianteActual.color;
-    document.getElementById('res-stu-av').style.color = estudianteActual.textColor;
-    document.getElementById('res-stu-name').textContent = estudianteActual.nombre;
-    document.getElementById('res-stu-sub').textContent = `${instr.nombre} · ${new Date().toLocaleDateString('es-PE',{day:'numeric',month:'long',year:'numeric'})} · ${usuarioActual?.nombre||''}`;
+    paintAvatar('res-stu', estudianteActual);
+    byId('res-stu-name').textContent = estudianteActual.nombre;
+    byId('res-stu-sub').textContent = `${instr.nombre} · ${new Date().toLocaleDateString('es-PE',{day:'numeric',month:'long',year:'numeric'})} · ${usuarioActual?.nombre||''}`;
   }
 
   // Derivación data
